@@ -188,9 +188,8 @@ class ChunkStream:
             pos = self.fp.tell()
             length = i32(s)
 
-        if not is_cid(cid):
-            if not ImageFile.LOAD_TRUNCATED_IMAGES:
-                raise SyntaxError(f"broken PNG file (chunk {repr(cid)})")
+        if not is_cid(cid) and not ImageFile.LOAD_TRUNCATED_IMAGES:
+            raise SyntaxError(f"broken PNG file (chunk {repr(cid)})")
 
         return cid, pos, length
 
@@ -526,11 +525,11 @@ class PngStream(ChunkStream):
         s = ImageFile._safe_read(self.fp, length)
         px, py = i32(s, 0), i32(s, 4)
         unit = s[8]
-        if unit == 1:  # meter
+        if unit == 0:
+            self.im_info["aspect"] = px, py
+        elif unit == 1:
             dpi = px * 0.0254, py * 0.0254
             self.im_info["dpi"] = dpi
-        elif unit == 0:
-            self.im_info["aspect"] = px, py
         return s
 
     def chunk_tEXt(self, pos, length):
@@ -562,10 +561,7 @@ class PngStream(ChunkStream):
         except ValueError:
             k = s
             v = b""
-        if v:
-            comp_method = v[0]
-        else:
-            comp_method = 0
+        comp_method = v[0] if v else 0
         if comp_method != 0:
             raise SyntaxError(f"Unknown compression method {comp_method} in zTXt chunk")
         try:
@@ -603,17 +599,16 @@ class PngStream(ChunkStream):
         except ValueError:
             return s
         if cf != 0:
-            if cm == 0:
-                try:
-                    v = _safe_zlib_decompress(v)
-                except ValueError:
-                    if ImageFile.LOAD_TRUNCATED_IMAGES:
-                        return s
-                    else:
-                        raise
-                except zlib.error:
+            if cm != 0:
+                return s
+            try:
+                v = _safe_zlib_decompress(v)
+            except ValueError:
+                if ImageFile.LOAD_TRUNCATED_IMAGES:
                     return s
-            else:
+                else:
+                    raise
+            except zlib.error:
                 return s
         try:
             k = k.decode("latin-1", "strict")
@@ -749,21 +744,21 @@ class PngImageFile(ImageFile.ImageFile):
             rawmode, data = self.png.im_palette
             self.palette = ImagePalette.raw(rawmode, data)
 
-        if cid == b"fdAT":
-            self.__prepare_idat = length - 4
-        else:
-            self.__prepare_idat = length  # used by load_prepare()
-
+        self.__prepare_idat = length - 4 if cid == b"fdAT" else length
         if self.png.im_n_frames is not None:
-            self._close_exclusive_fp_after_loading = False
-            self.png.save_rewind()
-            self.__rewind_idat = self.__prepare_idat
-            self.__rewind = self.__fp.tell()
-            if self.default_image:
-                # IDAT chunk contains default image and not first animation frame
-                self.n_frames += 1
-            self._seek(0)
+            self._extracted_from__open_59()
         self.is_animated = self.n_frames > 1
+
+    # TODO Rename this here and in `_open`
+    def _extracted_from__open_59(self):
+        self._close_exclusive_fp_after_loading = False
+        self.png.save_rewind()
+        self.__rewind_idat = self.__prepare_idat
+        self.__rewind = self.__fp.tell()
+        if self.default_image:
+            # IDAT chunk contains default image and not first animation frame
+            self.n_frames += 1
+        self._seek(0)
 
     @property
     def text(self):
@@ -936,11 +931,7 @@ class PngImageFile(ImageFile.ImageFile):
                 self.__idat = length  # empty chunks are allowed
 
         # read more data from this chunk
-        if read_bytes <= 0:
-            read_bytes = self.__idat
-        else:
-            read_bytes = min(read_bytes, self.__idat)
-
+        read_bytes = self.__idat if read_bytes <= 0 else min(read_bytes, self.__idat)
         self.__idat = self.__idat - read_bytes
 
         return self.fp.read(read_bytes)

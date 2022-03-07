@@ -62,10 +62,7 @@ class LutBuilder:
     """
 
     def __init__(self, patterns=None, op_name=None):
-        if patterns is not None:
-            self.patterns = patterns
-        else:
-            self.patterns = []
+        self.patterns = patterns if patterns is not None else []
         self.lut = None
         if op_name is not None:
             known_patterns = {
@@ -81,7 +78,7 @@ class LutBuilder:
                 ],
             }
             if op_name not in known_patterns:
-                raise Exception("Unknown pattern " + op_name + "!")
+                raise Exception(f"Unknown pattern {op_name}!")
 
             self.patterns = known_patterns[op_name]
 
@@ -112,20 +109,23 @@ class LutBuilder:
         # rotations
         if "4" in options:
             res = patterns[-1][1]
-            for i in range(4):
-                patterns.append(
-                    (self._string_permute(patterns[-1][0], ROTATION_MATRIX), res)
-                )
+            patterns.extend(
+                (self._string_permute(patterns[-1][0], ROTATION_MATRIX), res)
+                for _ in range(4)
+            )
+
         # mirror
         if "M" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
-                patterns.append((self._string_permute(pattern, MIRROR_MATRIX), res))
+            patterns.extend(
+                (self._string_permute(pattern, MIRROR_MATRIX), res)
+                for pattern, res in patterns[:n]
+            )
 
         # negate
         if "N" in options:
             n = len(patterns)
-            for pattern, res in patterns[0:n]:
+            for pattern, res in patterns[:n]:
                 # Swap 0 and 1
                 pattern = pattern.replace("0", "Z").replace("1", "0").replace("Z", "1")
                 res = 1 - int(res)

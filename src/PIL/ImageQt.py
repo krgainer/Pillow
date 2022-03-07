@@ -121,13 +121,8 @@ def align8to32(bytes, width, mode):
     if not extra_padding:
         return bytes
 
-    new_data = []
-    for i in range(len(bytes) // bytes_per_line):
-        new_data.append(
-            bytes[i * bytes_per_line : (i + 1) * bytes_per_line]
-            + b"\x00" * extra_padding
-        )
-
+    new_data = [bytes[i * bytes_per_line : (i + 1) * bytes_per_line]
+            + b"\x00" * extra_padding for i in range(len(bytes) // bytes_per_line)]
     return b"".join(new_data)
 
 

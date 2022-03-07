@@ -68,7 +68,7 @@ def raise_oserror(error):
         message = ERRORS.get(error)
     if not message:
         message = f"decoder error {error}"
-    raise OSError(message + " when reading image file")
+    raise OSError(f'{message} when reading image file')
 
 
 def _tilesort(t):
@@ -372,11 +372,7 @@ class Parser:
         if self.finished:
             return
 
-        if self.data is None:
-            self.data = data
-        else:
-            self.data = self.data + data
-
+        self.data = data if self.data is None else self.data + data
         # parse what we have
         if self.decoder:
 
@@ -394,23 +390,15 @@ class Parser:
                 # end of stream
                 self.data = None
                 self.finished = 1
-                if e < 0:
-                    # decoding error
-                    self.image = None
-                    raise_oserror(e)
-                else:
+                if e >= 0:
                     # end of image
                     return
+                # decoding error
+                self.image = None
+                raise_oserror(e)
             self.data = self.data[n:]
 
-        elif self.image:
-
-            # if we end up here with no decoder, this file cannot
-            # be incrementally parsed.  wait until we've gotten all
-            # available data
-            pass
-
-        else:
+        elif not self.image:
 
             # attempt to open this file
             try:
@@ -425,20 +413,23 @@ class Parser:
                     # custom load code, or multiple tiles
                     self.decode = None
                 else:
-                    # initialize decoder
-                    im.load_prepare()
-                    d, e, o, a = im.tile[0]
-                    im.tile = []
-                    self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    self.decoder.setimage(im.im, e)
-
-                    # calculate decoder offset
-                    self.offset = o
-                    if self.offset <= len(self.data):
-                        self.data = self.data[self.offset :]
-                        self.offset = 0
-
+                    self._extracted_from_feed_62(im)
                 self.image = im
+
+    # TODO Rename this here and in `feed`
+    def _extracted_from_feed_62(self, im):
+        # initialize decoder
+        im.load_prepare()
+        d, e, o, a = im.tile[0]
+        im.tile = []
+        self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
+        self.decoder.setimage(im.im, e)
+
+        # calculate decoder offset
+        self.offset = o
+        if self.offset <= len(self.data):
+            self.data = self.data[self.offset :]
+            self.offset = 0
 
     def __enter__(self):
         return self
@@ -511,17 +502,16 @@ def _save(im, fp, tile, bufsize=0):
             if encoder.pushes_fd:
                 encoder.setfd(fp)
                 l, s = encoder.encode_to_pyfd()
+            elif exc:
+                # compress to Python file-compatible object
+                while True:
+                    l, s, d = encoder.encode(bufsize)
+                    fp.write(d)
+                    if s:
+                        break
             else:
-                if exc:
-                    # compress to Python file-compatible object
-                    while True:
-                        l, s, d = encoder.encode(bufsize)
-                        fp.write(d)
-                        if s:
-                            break
-                else:
-                    # slight speedup: compress to real file object
-                    s = encoder.encode_to_file(fh, bufsize)
+                # slight speedup: compress to real file object
+                s = encoder.encode_to_file(fh, bufsize)
             if s < 0:
                 raise OSError(f"encoder error {s} when writing image file") from exc
         finally:

@@ -73,8 +73,7 @@ def read_32(fobj, start_length, size):
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
-                    for i in range(blocksize):
-                        data.append(byte)
+                    data.extend(byte for _ in range(blocksize))
                 else:
                     blocksize = byte + 1
                     data.append(fobj.read(blocksize))
@@ -112,22 +111,27 @@ def read_png_or_jpeg2000(fobj, start_length, size):
         or sig[:4] == b"\x0d\x0a\x87\x0a"
         or sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a"
     ):
-        if not enable_jpeg2k:
-            raise ValueError(
-                "Unsupported icon subimage format (rebuild PIL "
-                "with JPEG 2000 support to fix this)"
-            )
-        # j2k, jpc or j2c
-        fobj.seek(start)
-        jp2kstream = fobj.read(length)
-        f = io.BytesIO(jp2kstream)
-        im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
-        Image._decompression_bomb_check(im.size)
-        if im.mode != "RGBA":
-            im = im.convert("RGBA")
-        return {"RGBA": im}
+        return _extracted_from_read_png_or_jpeg2000_15(fobj, start, length)
     else:
         raise ValueError("Unsupported icon subimage format")
+
+
+# TODO Rename this here and in `read_png_or_jpeg2000`
+def _extracted_from_read_png_or_jpeg2000_15(fobj, start, length):
+    if not enable_jpeg2k:
+        raise ValueError(
+            "Unsupported icon subimage format (rebuild PIL "
+            "with JPEG 2000 support to fix this)"
+        )
+    # j2k, jpc or j2c
+    fobj.seek(start)
+    jp2kstream = fobj.read(length)
+    f = io.BytesIO(jp2kstream)
+    im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
+    Image._decompression_bomb_check(im.size)
+    if im.mode != "RGBA":
+        im = im.convert("RGBA")
+    return {"RGBA": im}
 
 
 class IcnsFile:

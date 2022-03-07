@@ -58,10 +58,11 @@ def __getattr__(name):
     categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
     if name in categories:
         warnings.warn(
-            "Image categories are " + deprecated + "Use is_animated instead.",
+            f"Image categories are {deprecated}Use is_animated instead.",
             DeprecationWarning,
             stacklevel=2,
         )
+
         return categories[name]
     elif name in ("NEAREST", "NONE"):
         warnings.warn(
@@ -411,7 +412,6 @@ def init():
 # --------------------------------------------------------------------
 # Codec factories (used by tobytes/frombytes and ImageFile.load)
 
-
 def _getdecoder(mode, decoder_name, args, extra=()):
 
     # tweak arguments
@@ -429,7 +429,7 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
     try:
         # get decoder
-        decoder = getattr(core, decoder_name + "_decoder")
+        decoder = getattr(core, f'{decoder_name}_decoder')
     except AttributeError as e:
         raise OSError(f"decoder {decoder_name} not available") from e
     return decoder(mode, *args + extra)
@@ -452,7 +452,7 @@ def _getencoder(mode, encoder_name, args, extra=()):
 
     try:
         # get encoder
-        encoder = getattr(core, encoder_name + "_encoder")
+        encoder = getattr(core, f'{encoder_name}_encoder')
     except AttributeError as e:
         raise OSError(f"encoder {encoder_name} not available") from e
     return encoder(mode, *args + extra)
@@ -628,10 +628,7 @@ class Image:
             self.load()
 
     def _dump(self, file=None, format=None, **options):
-        suffix = ""
-        if format:
-            suffix = "." + format
-
+        suffix = f".{format}" if format else ""
         if not file:
             f, filename = tempfile.mkstemp(suffix)
             os.close(f)
@@ -706,17 +703,15 @@ class Image:
         # numpy array interface support
         import numpy as np
 
-        new = {}
         shape, typestr = _conv_type_shape(self)
-        new["shape"] = shape
-        new["typestr"] = typestr
-        new["version"] = 3
-        if self.mode == "1":
-            # Binary images need to be extended from bits to bytes
-            # See: https://github.com/python-pillow/Pillow/issues/350
-            new["data"] = self.tobytes("raw", "L")
-        else:
-            new["data"] = self.tobytes()
+        new = {
+            "shape": shape,
+            "typestr": typestr,
+            "version": 3,
+            "data": self.tobytes("raw", "L")
+            if self.mode == "1"
+            else self.tobytes(),
+        }
 
         return np.array(self._ArrayData(new), dtype)
 
@@ -1277,9 +1272,11 @@ class Image:
         if self.im.bands == 1 or multiband:
             return self._new(filter.filter(self.im))
 
-        ims = []
-        for c in range(self.im.bands):
-            ims.append(self._new(filter.filter(self.im.getband(c))))
+        ims = [
+            self._new(filter.filter(self.im.getband(c)))
+            for c in range(self.im.bands)
+        ]
+
         return merge(self.mode, ims)
 
     def getbands(self):
@@ -1324,10 +1321,7 @@ class Image:
         self.load()
         if self.mode in ("1", "L", "P"):
             h = self.im.histogram()
-            out = []
-            for i in range(256):
-                if h[i]:
-                    out.append((h[i], i))
+            out = [(h[i], i) for i in range(256) if h[i]]
             if len(out) > maxcolors:
                 return None
             return out
@@ -1368,9 +1362,7 @@ class Image:
 
         self.load()
         if self.im.bands > 1:
-            extrema = []
-            for i in range(self.im.bands):
-                extrema.append(self.im.getband(i).getextrema())
+            extrema = [self.im.getband(i).getextrema() for i in range(self.im.bands)]
             return tuple(extrema)
         return self.im.getextrema()
 
@@ -1380,8 +1372,7 @@ class Image:
 
         def get_value(element):
             value = {get_name(k): v for k, v in element.attrib.items()}
-            children = list(element)
-            if children:
+            if children := list(element):
                 for child in children:
                     name = get_name(child.tag)
                     child_value = get_value(child)
@@ -1423,10 +1414,8 @@ class Image:
 
         # XMP tags
         if 0x0112 not in self._exif:
-            xmp_tags = self.info.get("XML:com.adobe.xmp")
-            if xmp_tags:
-                match = re.search(r'tiff:Orientation="([0-9])"', xmp_tags)
-                if match:
+            if xmp_tags := self.info.get("XML:com.adobe.xmp"):
+                if match := re.search(r'tiff:Orientation="([0-9])"', xmp_tags):
                     self._exif[0x0112] = int(match[1])
 
         return self._exif
@@ -1645,9 +1634,9 @@ class Image:
             raise ValueError("Source must be a tuple")
         if not isinstance(dest, (list, tuple)):
             raise ValueError("Destination must be a tuple")
-        if not len(source) in (2, 4):
+        if len(source) not in {2, 4}:
             raise ValueError("Source must be a 2 or 4-tuple")
-        if not len(dest) == 2:
+        if len(dest) != 2:
             raise ValueError("Destination must be a 2-tuple")
         if min(source) < 0:
             raise ValueError("Source must be non-negative")
@@ -1656,20 +1645,12 @@ class Image:
             source = source + im.size
 
         # over image, crop if it's not the whole thing.
-        if source == (0, 0) + im.size:
-            overlay = im
-        else:
-            overlay = im.crop(source)
-
+        overlay = im if source == (0, 0) + im.size else im.crop(source)
         # target for the paste
         box = dest + (dest[0] + overlay.width, dest[1] + overlay.height)
 
         # destination image. don't copy if we're using the whole image.
-        if box == (0, 0) + self.size:
-            background = self
-        else:
-            background = self.crop(box)
-
+        background = self if box == (0, 0) + self.size else self.crop(box)
         result = alpha_composite(background, overlay)
         self.paste(result, box)
 
@@ -1735,7 +1716,7 @@ class Image:
         if self.mode not in ("LA", "PA", "RGBA"):
             # attempt to promote self to a matching alpha mode
             try:
-                mode = getmodebase(self.mode) + "A"
+                mode = f'{getmodebase(self.mode)}A'
                 try:
                     self.im.setmode(mode)
                 except (AttributeError, ValueError) as e:
@@ -1748,12 +1729,7 @@ class Image:
                 self.mode = self.im.mode
             except KeyError as e:
                 raise ValueError("illegal image mode") from e
-
-        if self.mode in ("LA", "PA"):
-            band = 1
-        else:
-            band = 3
-
+        band = 1 if self.mode in ("LA", "PA") else 3
         if isImageType(alpha):
             # alpha layer
             if alpha.mode not in ("1", "L"):
@@ -2278,11 +2254,7 @@ class Image:
 
         if format.upper() not in SAVE:
             init()
-        if save_all:
-            save_handler = SAVE_ALL[format.upper()]
-        else:
-            save_handler = SAVE[format.upper()]
-
+        save_handler = SAVE_ALL[format.upper()] if save_all else SAVE[format.upper()]
         if open_fp:
             if params.get("append", False):
                 # Open also for reading ("+"), because TIFF save_all
@@ -2356,10 +2328,7 @@ class Image:
         """
 
         self.load()
-        if self.im.bands == 1:
-            ims = [self.copy()]
-        else:
-            ims = map(self._new, self.im.split())
+        ims = [self.copy()] if self.im.bands == 1 else map(self._new, self.im.split())
         return tuple(ims)
 
     def getchannel(self, channel):
@@ -2566,7 +2535,7 @@ class Image:
         h = box[3] - box[1]
 
         if method == Transform.AFFINE:
-            data = data[0:6]
+            data = data[:6]
 
         elif method == Transform.EXTENT:
             # convert extent to an affine transform
@@ -2577,12 +2546,12 @@ class Image:
             data = (xs, 0, x0, 0, ys, y0)
 
         elif method == Transform.PERSPECTIVE:
-            data = data[0:8]
+            data = data[:8]
 
         elif method == Transform.QUAD:
             # quadrilateral warp.  data specifies the four corners
             # given as NW, SW, SE, and NE.
-            nw = data[0:2]
+            nw = data[:2]
             sw = data[2:4]
             se = data[4:6]
             ne = data[6:8]
@@ -2626,8 +2595,9 @@ class Image:
                 )
             ]
             raise ValueError(
-                message + " Use " + ", ".join(filters[:-1]) + " or " + filters[-1]
+                f'{message} Use ' + ", ".join(filters[:-1]) + " or " + filters[-1]
             )
+
 
         image.load()
 
@@ -2929,11 +2899,7 @@ def fromarray(obj, mode=None):
 
     size = 1 if ndim == 1 else shape[1], shape[0]
     if strides is not None:
-        if hasattr(obj, "tobytes"):
-            obj = obj.tobytes()
-        else:
-            obj = obj.tostring()
-
+        obj = obj.tobytes() if hasattr(obj, "tobytes") else obj.tostring()
     return frombuffer(mode, size, obj, "raw", rawmode, 0, 1)
 
 
@@ -2979,8 +2945,8 @@ _fromarray_typemap = {
 }
 
 # shortcuts
-_fromarray_typemap[((1, 1), _ENDIAN + "i4")] = ("I", "I")
-_fromarray_typemap[((1, 1), _ENDIAN + "f4")] = ("F", "F")
+_fromarray_typemap[(1, 1), f'{_ENDIAN}i4'] = ("I", "I")
+_fromarray_typemap[(1, 1), f'{_ENDIAN}f4'] = ("F", "F")
 
 
 def _decompression_bomb_check(size):
@@ -3473,9 +3439,7 @@ class Exif(MutableMapping):
         # application marker (!).
         if data == self._loaded_exif:
             return
-        self._loaded_exif = data
-        self._data.clear()
-        self._ifds.clear()
+        self._extracted_from_load_from_fp_10(data)
         if not data:
             self._info = None
             return
@@ -3493,18 +3457,12 @@ class Exif(MutableMapping):
         self._info.load(self.fp)
 
     def load_from_fp(self, fp, offset=None):
-        self._loaded_exif = None
-        self._data.clear()
-        self._ifds.clear()
-
+        self._extracted_from_load_from_fp_10(None)
         # process dictionary
         from . import TiffImagePlugin
 
         self.fp = fp
-        if offset is not None:
-            self.head = self._get_head()
-        else:
-            self.head = self.fp.read(8)
+        self.head = self._get_head() if offset is not None else self.fp.read(8)
         self._info = TiffImagePlugin.ImageFileDirectory_v2(self.head)
         if self.endian is None:
             self.endian = self._info._endian
@@ -3513,13 +3471,18 @@ class Exif(MutableMapping):
         self.fp.seek(offset)
         self._info.load(self.fp)
 
+    # TODO Rename this here and in `load` and `load_from_fp`
+    def _extracted_from_load_from_fp_10(self, arg0):
+        self._loaded_exif = arg0
+        self._data.clear()
+        self._ifds.clear()
+
     def _get_merged_dict(self):
         merged_dict = dict(self)
 
         # get EXIF extension
         if 0x8769 in self:
-            ifd = self._get_ifd_dict(self[0x8769])
-            if ifd:
+            if ifd := self._get_ifd_dict(self[0x8769]):
                 merged_dict.update(ifd)
 
         # GPS
@@ -3566,7 +3529,7 @@ class Exif(MutableMapping):
                         ifd_data = tag_data[ifd_offset:]
 
                         makernote = {}
-                        for i in range(0, struct.unpack("<H", ifd_data[:2])[0]):
+                        for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )
@@ -3601,7 +3564,7 @@ class Exif(MutableMapping):
                         self._ifds[tag] = dict(self._fixup_dict(makernote))
                     elif self.get(0x010F) == "Nintendo":
                         makernote = {}
-                        for i in range(0, struct.unpack(">H", tag_data[:2])[0]):
+                        for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
                                 ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
                             )

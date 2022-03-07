@@ -57,10 +57,7 @@ def show(image, title=None, **options):
     :param \**options: Additional viewer options.
     :returns: ``True`` if a suitable viewer was found, ``False`` otherwise.
     """
-    for viewer in _viewers:
-        if viewer.show(image, title=title, **options):
-            return True
-    return False
+    return any(viewer.show(image, title=title, **options) for viewer in _viewers)
 
 
 class Viewer:
@@ -119,15 +116,14 @@ class Viewer:
         instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         os.system(self.get_command(path, **options))
         return 1
 
@@ -175,15 +171,14 @@ class MacViewer(Viewer):
         instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         subprocess.call(["open", "-a", "Preview.app", path])
         subprocess.Popen(
             [
@@ -227,15 +222,14 @@ class XDGViewer(UnixViewer):
         instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         subprocess.Popen(["xdg-open", path])
         return 1
 
@@ -260,15 +254,14 @@ class DisplayViewer(UnixViewer):
         and ``path`` should be used instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         args = ["display"]
         if "title" in options:
             args += ["-title", options["title"]]
@@ -294,15 +287,14 @@ class GmDisplayViewer(UnixViewer):
         and ``path`` should be used instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         subprocess.Popen(["gm", "display", path])
         return 1
 
@@ -323,15 +315,14 @@ class EogViewer(UnixViewer):
         and ``path`` should be used instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         subprocess.Popen(["eog", "-n", path])
         return 1
 
@@ -358,15 +349,14 @@ class XVViewer(UnixViewer):
         and ``path`` should be used instead.
         """
         if path is None:
-            if "file" in options:
-                warnings.warn(
-                    "The 'file' argument is deprecated and will be removed in Pillow "
-                    "10 (2023-07-01). Use 'path' instead.",
-                    DeprecationWarning,
-                )
-                path = options.pop("file")
-            else:
+            if "file" not in options:
                 raise TypeError("Missing required argument: 'path'")
+            warnings.warn(
+                "The 'file' argument is deprecated and will be removed in Pillow "
+                "10 (2023-07-01). Use 'path' instead.",
+                DeprecationWarning,
+            )
+            path = options.pop("file")
         args = ["xv"]
         if "title" in options:
             args += ["-name", options["title"]]

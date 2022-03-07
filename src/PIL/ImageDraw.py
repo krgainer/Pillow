@@ -978,7 +978,7 @@ def _compute_regular_polygon_vertices(bounding_circle, n_sides, rotation):
         degrees = 360 / n_sides
         # Start with the bottom left polygon vertex
         current_angle = (270 - 0.5 * degrees) + rotation
-        for _ in range(0, n_sides):
+        for _ in range(n_sides):
             angles.append(current_angle)
             current_angle += degrees
             if current_angle > 360:
@@ -999,6 +999,6 @@ def _color_diff(color1, color2):
     Uses 1-norm distance to calculate difference between two values.
     """
     if isinstance(color2, tuple):
-        return sum(abs(color1[i] - color2[i]) for i in range(0, len(color2)))
+        return sum(abs(color1[i] - color2[i]) for i in range(len(color2)))
     else:
         return abs(color1 - color2)

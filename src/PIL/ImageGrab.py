@@ -26,20 +26,11 @@ if sys.platform == "darwin":
 
 
 def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=None):
-    if xdisplay is None:
-        if sys.platform == "darwin":
-            fh, filepath = tempfile.mkstemp(".png")
-            os.close(fh)
-            subprocess.call(["screencapture", "-x", filepath])
-            im = Image.open(filepath)
-            im.load()
-            os.unlink(filepath)
-            if bbox:
-                im_cropped = im.crop(bbox)
-                im.close()
-                return im_cropped
-            return im
-        elif sys.platform == "win32":
+    if sys.platform == "darwin":
+        if xdisplay is None:
+            return _extracted_from_grab_4(bbox)
+    elif sys.platform == "win32":
+        if xdisplay is None:
             offset, size, data = Image.core.grabscreen_win32(
                 include_layered_windows, all_screens
             )
@@ -68,30 +59,24 @@ def grab(bbox=None, include_layered_windows=False, all_screens=False, xdisplay=N
     return im
 
 
+# TODO Rename this here and in `grab`
+def _extracted_from_grab_4(bbox):
+    fh, filepath = tempfile.mkstemp(".png")
+    os.close(fh)
+    subprocess.call(["screencapture", "-x", filepath])
+    im = Image.open(filepath)
+    im.load()
+    os.unlink(filepath)
+    if bbox:
+        im_cropped = im.crop(bbox)
+        im.close()
+        return im_cropped
+    return im
+
+
 def grabclipboard():
     if sys.platform == "darwin":
-        fh, filepath = tempfile.mkstemp(".jpg")
-        os.close(fh)
-        commands = [
-            'set theFile to (open for access POSIX file "'
-            + filepath
-            + '" with write permission)',
-            "try",
-            "    write (the clipboard as JPEG picture) to theFile",
-            "end try",
-            "close access theFile",
-        ]
-        script = ["osascript"]
-        for command in commands:
-            script += ["-e", command]
-        subprocess.call(script)
-
-        im = None
-        if os.stat(filepath).st_size != 0:
-            im = Image.open(filepath)
-            im.load()
-        os.unlink(filepath)
-        return im
+        return _extracted_from_grabclipboard_3()
     elif sys.platform == "win32":
         fmt, data = Image.core.grabclipboard_win32()
         if fmt == "file":  # CF_HDROP
@@ -118,3 +103,29 @@ def grabclipboard():
         return None
     else:
         raise NotImplementedError("ImageGrab.grabclipboard() is macOS and Windows only")
+
+
+# TODO Rename this here and in `grabclipboard`
+def _extracted_from_grabclipboard_3():
+    fh, filepath = tempfile.mkstemp(".jpg")
+    os.close(fh)
+    commands = [
+        'set theFile to (open for access POSIX file "'
+        + filepath
+        + '" with write permission)',
+        "try",
+        "    write (the clipboard as JPEG picture) to theFile",
+        "end try",
+        "close access theFile",
+    ]
+    script = ["osascript"]
+    for command in commands:
+        script += ["-e", command]
+    subprocess.call(script)
+
+    im = None
+    if os.stat(filepath).st_size != 0:
+        im = Image.open(filepath)
+        im.load()
+    os.unlink(filepath)
+    return im

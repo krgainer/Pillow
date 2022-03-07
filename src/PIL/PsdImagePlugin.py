@@ -142,14 +142,18 @@ class PsdImageFile(ImageFile.ImageFile):
 
         # seek to given layer (1..max)
         try:
-            name, mode, bbox, tile = self.layers[layer - 1]
-            self.mode = mode
-            self.tile = tile
-            self.frame = layer
-            self.fp = self.__fp
-            return name, bbox
+            return self._extracted_from_seek_7(layer)
         except IndexError as e:
             raise EOFError("no such layer") from e
+
+    # TODO Rename this here and in `seek`
+    def _extracted_from_seek_7(self, layer):
+        name, mode, bbox, tile = self.layers[layer - 1]
+        self.mode = mode
+        self.tile = tile
+        self.frame = layer
+        self.fp = self.__fp
+        return name, bbox
 
     def tell(self):
         # return layer number (0=image, 1..max=layers)
@@ -296,7 +300,7 @@ def _maketile(file, mode, bbox, channels):
             if mode == "CMYK":
                 layer += ";I"
             tile.append(("packbits", bbox, offset, layer))
-            for y in range(ysize):
+            for _ in range(ysize):
                 offset = offset + i16(bytecount, i)
                 i += 2
 

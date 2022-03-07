@@ -421,19 +421,16 @@ def _normalize_mode(im, initial_call=False):
         im.load()
         return im
     if Image.getmodebase(im.mode) == "RGB":
-        if initial_call:
-            palette_size = 256
-            if im.palette:
-                palette_size = len(im.palette.getdata()[1]) // 3
-            im = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=palette_size)
-            if im.palette.mode == "RGBA":
-                for rgba in im.palette.colors.keys():
-                    if rgba[3] == 0:
-                        im.info["transparency"] = im.palette.colors[rgba]
-                        break
-            return im
-        else:
+        if not initial_call:
             return im.convert("P")
+        palette_size = len(im.palette.getdata()[1]) // 3 if im.palette else 256
+        im = im.convert("P", palette=Image.Palette.ADAPTIVE, colors=palette_size)
+        if im.palette.mode == "RGBA":
+            for rgba in im.palette.colors.keys():
+                if rgba[3] == 0:
+                    im.info["transparency"] = im.palette.colors[rgba]
+                    break
+        return im
     return im.convert("L")
 
 
@@ -502,7 +499,7 @@ def _write_single_frame(im, fp, palette):
     # local image header
     flags = 0
     if get_interlace(im):
-        flags = flags | 64
+        flags |= 64
     _write_local_header(fp, im, (0, 0), flags)
 
     im_out.encoderconfig = (8, get_interlace(im))
@@ -662,7 +659,7 @@ def _write_local_header(fp, im, offset, flags):
             + o8(0)
         )
 
-    if "comment" in im.encoderinfo and 1 <= len(im.encoderinfo["comment"]):
+    if "comment" in im.encoderinfo and len(im.encoderinfo["comment"]) >= 1:
         fp.write(b"!" + o8(254))  # extension intro
         comment = im.encoderinfo["comment"]
         if isinstance(comment, str):
@@ -721,35 +718,38 @@ def _save_netpbm(im, fp, filename):
                     ["ppmtogif", tempfile], stdout=f, stderr=subprocess.DEVNULL
                 )
             else:
-                # Pipe ppmquant output into ppmtogif
-                # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
-                quant_cmd = ["ppmquant", "256", tempfile]
-                togif_cmd = ["ppmtogif"]
-                quant_proc = subprocess.Popen(
-                    quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-                )
-                togif_proc = subprocess.Popen(
-                    togif_cmd,
-                    stdin=quant_proc.stdout,
-                    stdout=f,
-                    stderr=subprocess.DEVNULL,
-                )
-
-                # Allow ppmquant to receive SIGPIPE if ppmtogif exits
-                quant_proc.stdout.close()
-
-                retcode = quant_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, quant_cmd)
-
-                retcode = togif_proc.wait()
-                if retcode:
-                    raise subprocess.CalledProcessError(retcode, togif_cmd)
+                _extracted_from__save_netpbm_20(tempfile, f)
     finally:
         try:
             os.unlink(tempfile)
         except OSError:
             pass
+
+
+# TODO Rename this here and in `_save_netpbm`
+def _extracted_from__save_netpbm_20(tempfile, f):
+    # Pipe ppmquant output into ppmtogif
+    # "ppmquant 256 %s | ppmtogif > %s" % (tempfile, filename)
+    quant_cmd = ["ppmquant", "256", tempfile]
+    togif_cmd = ["ppmtogif"]
+    quant_proc = subprocess.Popen(
+        quant_cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+    )
+    togif_proc = subprocess.Popen(
+        togif_cmd,
+        stdin=quant_proc.stdout,
+        stdout=f,
+        stderr=subprocess.DEVNULL,
+    )
+
+    # Allow ppmquant to receive SIGPIPE if ppmtogif exits
+    quant_proc.stdout.close()
+
+    if retcode := quant_proc.wait():
+        raise subprocess.CalledProcessError(retcode, quant_cmd)
+
+    if retcode := togif_proc.wait():
+        raise subprocess.CalledProcessError(retcode, togif_cmd)
 
 
 # Force optimization so that we can test performance against

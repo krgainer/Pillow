@@ -194,20 +194,13 @@ def raw(rawmode, data):
 
 
 def make_linear_lut(black, white):
-    lut = []
-    if black == 0:
-        for i in range(256):
-            lut.append(white * i // 255)
-    else:
+    if black != 0:
         raise NotImplementedError  # FIXME
-    return lut
+    return [white * i // 255 for i in range(256)]
 
 
 def make_gamma_lut(exp):
-    lut = []
-    for i in range(256):
-        lut.append(int(((i / 255.0) ** exp) * 255.0 + 0.5))
-    return lut
+    return [int(((i / 255.0) ** exp) * 255.0 + 0.5) for i in range(256)]
 
 
 def negative(mode="RGB"):
@@ -219,9 +212,7 @@ def negative(mode="RGB"):
 def random(mode="RGB"):
     from random import randint
 
-    palette = []
-    for i in range(256 * len(mode)):
-        palette.append(randint(0, 255))
+    palette = [randint(0, 255) for _ in range(256 * len(mode))]
     return ImagePalette(mode, palette)
 
 

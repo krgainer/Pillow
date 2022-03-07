@@ -111,10 +111,7 @@ def _parse_codestream(fp):
 
     size = (xsiz - xosiz, ysiz - yosiz)
     if csiz == 1:
-        if (yrsiz[0] & 0x7F) > 8:
-            mode = "I;16"
-        else:
-            mode = "L"
+        mode = "I;16" if (yrsiz[0] & 0x7F) > 8 else "L"
     elif csiz == 2:
         mode = "LA"
     elif csiz == 3:
@@ -208,17 +205,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             self.codec = "j2k"
             self._size, self.mode = _parse_codestream(self.fp)
         else:
-            sig = sig + self.fp.read(8)
-
-            if sig == b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
-                self.codec = "jp2"
-                header = _parse_jp2_header(self.fp)
-                self._size, self.mode, self.custom_mimetype, dpi = header
-                if dpi is not None:
-                    self.info["dpi"] = dpi
-            else:
-                raise SyntaxError("not a JPEG 2000 file")
-
+            self._extracted_from__open_7(sig)
         if self.size is None or self.mode is None:
             raise SyntaxError("unable to determine size/mode")
 
@@ -249,6 +236,19 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
                 (self.codec, self._reduce, self.layers, fd, length),
             )
         ]
+
+    # TODO Rename this here and in `_open`
+    def _extracted_from__open_7(self, sig):
+        sig = sig + self.fp.read(8)
+
+        if sig != b"\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a":
+            raise SyntaxError("not a JPEG 2000 file")
+
+        self.codec = "jp2"
+        header = _parse_jp2_header(self.fp)
+        self._size, self.mode, self.custom_mimetype, dpi = header
+        if dpi is not None:
+            self.info["dpi"] = dpi
 
     @property
     def reduce(self):

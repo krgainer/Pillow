@@ -157,22 +157,16 @@ class DdsImageFile(ImageFile.ImageFile):
                 self.pixel_format = "DXT5"
                 n = 3
             elif fourcc == b"BC5S":
-                self.pixel_format = "BC5S"
-                n = 5
-                self.mode = "RGB"
+                n = self._extracted_from__open_48("BC5S")
             elif fourcc == b"DX10":
                 data_start += 20
                 # ignoring flags which pertain to volume textures and cubemaps
                 (dxgi_format,) = struct.unpack("<I", self.fp.read(4))
                 self.fp.read(16)
                 if dxgi_format in (DXGI_FORMAT_BC5_TYPELESS, DXGI_FORMAT_BC5_UNORM):
-                    self.pixel_format = "BC5"
-                    n = 5
-                    self.mode = "RGB"
+                    n = self._extracted_from__open_48("BC5")
                 elif dxgi_format == DXGI_FORMAT_BC5_SNORM:
-                    self.pixel_format = "BC5S"
-                    n = 5
-                    self.mode = "RGB"
+                    n = self._extracted_from__open_48("BC5S")
                 elif dxgi_format in (DXGI_FORMAT_BC7_TYPELESS, DXGI_FORMAT_BC7_UNORM):
                     self.pixel_format = "BC7"
                     n = 7
@@ -199,6 +193,12 @@ class DdsImageFile(ImageFile.ImageFile):
             self.tile = [
                 ("bcn", (0, 0) + self.size, data_start, (n, self.pixel_format))
             ]
+
+    # TODO Rename this here and in `_open`
+    def _extracted_from__open_48(self, arg0):
+        self.pixel_format = arg0
+        self.mode = "RGB"
+        return 5
 
     def load_seek(self, pos):
         pass

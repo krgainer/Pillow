@@ -63,12 +63,10 @@ class PpmImageFile(ImageFile.ImageFile):
         token = b""
         while len(token) <= 10:  # read until next whitespace or limit of 10 characters
             c = self.fp.read(1)
-            if not c:
-                break
-            elif c in b_whitespace:  # token ended
-                if not token:
-                    # skip whitespace at start
-                    continue
+            if c and c in b_whitespace and not token:
+                # skip whitespace at start
+                continue
+            elif c and c in b_whitespace or not c:
                 break
             elif c == b"#":
                 # ignores rest of the line; stops at CR, LF or EOF
@@ -87,8 +85,8 @@ class PpmImageFile(ImageFile.ImageFile):
         magic_number = self._read_magic()
         try:
             mode = MODES[magic_number]
-        except KeyError:
-            raise SyntaxError("not a PPM file")
+        except KeyError as e:
+            raise SyntaxError("not a PPM file") from e
 
         self.custom_mimetype = {
             b"P4": "image/x-portable-bitmap",
@@ -104,24 +102,19 @@ class PpmImageFile(ImageFile.ImageFile):
 
         for ix in range(3):
             token = int(self._read_token())
-            if ix == 0:  # token is the x size
+            if ix == 0:
                 xsize = token
-            elif ix == 1:  # token is the y size
+            elif ix == 1:
                 ysize = token
                 if mode == "1":
                     break
-            elif ix == 2:  # token is maxval
+            elif ix == 2:
                 maxval = token
                 if maxval > 255:
-                    if not mode == "L":
-                        raise ValueError(f"Too many colors for band: {token}")
-                    if maxval < 2**16:
-                        self.mode = "I"
-                        rawmode = "I;16B"
-                    else:
-                        self.mode = "I"
-                        rawmode = "I;32B"
-
+                    if mode != "L":
+                        raise ValueError(f"Too many colors for band: {maxval}")
+                    rawmode = "I;16B" if maxval < 2**16 else "I;32B"
+                    self.mode = "I"
         self._size = xsize, ysize
         self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
 

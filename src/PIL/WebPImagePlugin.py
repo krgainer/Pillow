@@ -94,9 +94,7 @@ class WebPImageFile(ImageFile.ImageFile):
         self._reset(reset=False)
 
     def _getexif(self):
-        if "exif" not in self.info:
-            return None
-        return self.getexif()._get_merged_dict()
+        return None if "exif" not in self.info else self.getexif()._get_merged_dict()
 
     def seek(self, frame):
         if not self._seek_check(frame):
@@ -141,29 +139,25 @@ class WebPImageFile(ImageFile.ImageFile):
             self._get_next()  # Advance to the requested frame
 
     def load(self):
-        if _webp.HAVE_WEBPANIM:
-            if self.__loaded != self.__logical_frame:
-                self._seek(self.__logical_frame)
+        if _webp.HAVE_WEBPANIM and self.__loaded != self.__logical_frame:
+            self._seek(self.__logical_frame)
 
-                # We need to load the image data for this frame
-                data, timestamp, duration = self._get_next()
-                self.info["timestamp"] = timestamp
-                self.info["duration"] = duration
-                self.__loaded = self.__logical_frame
+            # We need to load the image data for this frame
+            data, timestamp, duration = self._get_next()
+            self.info["timestamp"] = timestamp
+            self.info["duration"] = duration
+            self.__loaded = self.__logical_frame
 
-                # Set tile
-                if self.fp and self._exclusive_fp:
-                    self.fp.close()
-                self.fp = BytesIO(data)
-                self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
+            # Set tile
+            if self.fp and self._exclusive_fp:
+                self.fp.close()
+            self.fp = BytesIO(data)
+            self.tile = [("raw", (0, 0) + self.size, 0, self.rawmode)]
 
         return super().load()
 
     def tell(self):
-        if not _webp.HAVE_WEBPANIM:
-            return super().tell()
-
-        return self.__logical_frame
+        return super().tell() if not _webp.HAVE_WEBPANIM else self.__logical_frame
 
 
 def _save_all(im, fp, filename):

@@ -24,7 +24,7 @@ def check_module(feature):
     :returns: ``True`` if available, ``False`` otherwise.
     :raises ValueError: If the module is not defined in this version of Pillow.
     """
-    if not (feature in modules):
+    if feature not in modules:
         raise ValueError(f"Unknown module {feature}")
 
     module, ver = modules[feature]
@@ -82,7 +82,7 @@ def check_codec(feature):
 
     codec, lib = codecs[feature]
 
-    return codec + "_encoder" in dir(Image.core)
+    return f'{codec}_encoder' in dir(Image.core)
 
 
 def version_codec(feature):
@@ -98,7 +98,7 @@ def version_codec(feature):
 
     codec, lib = codecs[feature]
 
-    version = getattr(Image.core, lib + "_version")
+    version = getattr(Image.core, f'{lib}_version')
 
     if feature == "libtiff":
         return version.split("\n")[0].split("Version ")[1]

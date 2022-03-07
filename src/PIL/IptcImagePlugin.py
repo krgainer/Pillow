@@ -195,9 +195,7 @@ def getiptcinfo(im):
         return im.info
 
     elif isinstance(im, JpegImagePlugin.JpegImageFile):
-        # extract the IPTC/NAA resource
-        photoshop = im.info.get("photoshop")
-        if photoshop:
+        if photoshop := im.info.get("photoshop"):
             data = photoshop.get(0x0404)
 
     elif isinstance(im, TiffImagePlugin.TiffImageFile):
@@ -211,7 +209,6 @@ def getiptcinfo(im):
     if data is None:
         return None  # no properties
 
-    # create an IptcImagePlugin object without initializing it
     class FakeImage:
         pass
 

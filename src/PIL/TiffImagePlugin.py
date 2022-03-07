@@ -676,7 +676,7 @@ class ImageFileDirectory_v2(MutableMapping):
 
         idx, fmt, name = idx_fmt_name
         TYPES[idx] = name
-        size = struct.calcsize("=" + fmt)
+        size = struct.calcsize(f"={fmt}")
         _load_dispatch[idx] = (  # noqa: F821
             size,
             lambda self, data, legacy_api=True: (
@@ -776,7 +776,7 @@ class ImageFileDirectory_v2(MutableMapping):
         self._offset = fp.tell()
 
         try:
-            for i in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
+            for _ in range(self._unpack("H", self._ensure_read(fp, 2))[0]):
                 tag, typ, count, data = self._unpack("HHL4s", self._ensure_read(fp, 12))
 
                 tagname = TiffTags.lookup(tag, self.group).name
@@ -786,7 +786,7 @@ class ImageFileDirectory_v2(MutableMapping):
                 try:
                     unit_size, handler = self._load_dispatch[typ]
                 except KeyError:
-                    logger.debug(msg + f" - unsupported type {typ}")
+                    logger.debug(f"{msg} - unsupported type {typ}")
                     continue  # ignore unsupported type
                 size = count * unit_size
                 if size > 4:
@@ -917,8 +917,8 @@ ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
 for idx, name in TYPES.items():
     name = name.replace(" ", "_")
-    setattr(ImageFileDirectory_v2, "load_" + name, _load_dispatch[idx][1])
-    setattr(ImageFileDirectory_v2, "write_" + name, _write_dispatch[idx])
+    setattr(ImageFileDirectory_v2, f"load_{name}", _load_dispatch[idx][1])
+    setattr(ImageFileDirectory_v2, f"write_{name}", _write_dispatch[idx])
 del _load_dispatch, _write_dispatch, idx, name
 
 
@@ -1091,33 +1091,32 @@ class TiffImageFile(ImageFile.ImageFile):
         self.fp.tell()
 
         while len(self._frame_pos) <= frame:
-            if not self.__next:
-                raise EOFError("no more images in TIFF file")
-            logger.debug(
-                f"Seeking to frame {frame}, on frame {self.__frame}, "
-                f"__next {self.__next}, location: {self.fp.tell()}"
-            )
-            self.fp.seek(self.__next)
-            self._frame_pos.append(self.__next)
-            logger.debug("Loading tags, location: %s" % self.fp.tell())
-            self.tag_v2.load(self.fp)
-            if self.tag_v2.next in self._frame_pos:
-                # This IFD has already been processed
-                # Declare this to be the end of the image
-                self.__next = 0
-            else:
-                self.__next = self.tag_v2.next
-            if self.__next == 0:
-                self._n_frames = frame + 1
-            if len(self._frame_pos) == 1:
-                self.is_animated = self.__next != 0
-            self.__frame += 1
+            self._extracted_from__seek_9(frame)
         self.fp.seek(self._frame_pos[frame])
         self.tag_v2.load(self.fp)
         # fill the legacy tag/ifd entries
         self.tag = self.ifd = ImageFileDirectory_v1.from_v2(self.tag_v2)
         self.__frame = frame
         self._setup()
+
+    # TODO Rename this here and in `_seek`
+    def _extracted_from__seek_9(self, frame):
+        if not self.__next:
+            raise EOFError("no more images in TIFF file")
+        logger.debug(
+            f"Seeking to frame {frame}, on frame {self.__frame}, "
+            f"__next {self.__next}, location: {self.fp.tell()}"
+        )
+        self.fp.seek(self.__next)
+        self._frame_pos.append(self.__next)
+        logger.debug("Loading tags, location: %s" % self.fp.tell())
+        self.tag_v2.load(self.fp)
+        self.__next = 0 if self.tag_v2.next in self._frame_pos else self.tag_v2.next
+        if self.__next == 0:
+            self._n_frames = frame + 1
+        if len(self._frame_pos) == 1:
+            self.is_animated = self.__next != 0
+        self.__frame += 1
 
     def tell(self):
         """Return the current frame number"""
@@ -1141,8 +1140,7 @@ class TiffImageFile(ImageFile.ImageFile):
         :returns: Photoshop "Image Resource Blocks" in a dictionary.
         """
         blocks = {}
-        val = self.tag_v2.get(0x8649)
-        if val:
+        if val := self.tag_v2.get(0x8649):
             while val[:4] == b"8BIM":
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
@@ -1197,7 +1195,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         self.load_prepare()
 
-        if not len(self.tile) == 1:
+        if len(self.tile) != 1:
             raise OSError("Not exactly one tile")
 
         # (self._compression, (extents tuple),
