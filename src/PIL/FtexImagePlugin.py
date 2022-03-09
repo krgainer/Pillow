@@ -70,7 +70,7 @@ def __getattr__(name):
     deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Format: "FORMAT_"}.items():
         if name.startswith(prefix):
-            name = name[len(prefix) :]
+            name = name[len(prefix):]
             if name in enum.__members__:
                 warnings.warn(
                     prefix

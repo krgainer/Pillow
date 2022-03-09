@@ -17,6 +17,7 @@
 
 from . import Image, ImageFile
 
+
 ##
 # Image plugin for PhotoCD images.  This plugin only reads the 768x512
 # image from the file; higher resolutions are encoded in a proprietary
@@ -24,7 +25,6 @@ from . import Image, ImageFile
 
 
 class PcdImageFile(ImageFile.ImageFile):
-
     format = "PCD"
     format_description = "Kodak PhotoCD"
 

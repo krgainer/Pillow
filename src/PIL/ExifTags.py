@@ -14,7 +14,6 @@ This module provides constants and clear-text names for various
 well-known EXIF tags.
 """
 
-
 TAGS = {
     # possibly incomplete
     0x0001: "InteropIndex",
@@ -292,7 +291,6 @@ TAGS = {
     0xC761: "NoiseProfile",
 }
 """Maps EXIF tags to tag names."""
-
 
 GPSTAGS = {
     0: "GPSVersionID",

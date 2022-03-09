@@ -96,7 +96,6 @@ for i in ["32S"]:
 for i in range(2, 33):
     OPEN[f"L*{i} image"] = ("F", f"F;{i}")
 
-
 # --------------------------------------------------------------------
 # Read IM directory
 
@@ -115,7 +114,6 @@ def number(s):
 
 
 class ImImageFile(ImageFile.ImageFile):
-
     format = "IM"
     format_description = "IFUNC Image Memory"
     _close_exclusive_fp_after_loading = False
@@ -333,7 +331,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         image_type, rawmode = SAVE[im.mode]
     except KeyError as e:

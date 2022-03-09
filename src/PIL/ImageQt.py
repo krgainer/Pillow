@@ -121,8 +121,8 @@ def align8to32(bytes, width, mode):
     if not extra_padding:
         return bytes
 
-    new_data = [bytes[i * bytes_per_line : (i + 1) * bytes_per_line]
-            + b"\x00" * extra_padding for i in range(len(bytes) // bytes_per_line)]
+    new_data = [bytes[i * bytes_per_line: (i + 1) * bytes_per_line]
+                + b"\x00" * extra_padding for i in range(len(bytes) // bytes_per_line)]
     return b"".join(new_data)
 
 
@@ -152,7 +152,7 @@ def _toqclass_helper(im):
         colortable = []
         palette = im.getpalette()
         for i in range(0, len(palette), 3):
-            colortable.append(rgb(*palette[i : i + 3]))
+            colortable.append(rgb(*palette[i: i + 3]))
     elif im.mode == "RGB":
         # Populate the 4th channel with 255
         im = im.convert("RGBA")

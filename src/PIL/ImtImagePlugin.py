@@ -30,7 +30,6 @@ field = re.compile(rb"([a-z]*) ([^ \r\n]*)")
 
 
 class ImtImageFile(ImageFile.ImageFile):
-
     format = "IMT"
     format_description = "IM Tools"
 

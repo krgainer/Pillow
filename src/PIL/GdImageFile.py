@@ -26,7 +26,6 @@
     purposes only.
 """
 
-
 from . import ImageFile, ImagePalette, UnidentifiedImageError
 from ._binary import i16be as i16
 from ._binary import i32be as i32
@@ -63,7 +62,7 @@ class GdImageFile(ImageFile.ImageFile):
             self.info["transparency"] = tindex
 
         self.palette = ImagePalette.raw(
-            "XBGR", s[7 + trueColorOffset + 4 : 7 + trueColorOffset + 4 + 256 * 4]
+            "XBGR", s[7 + trueColorOffset + 4: 7 + trueColorOffset + 4 + 256 * 4]
         )
 
         self.tile = [

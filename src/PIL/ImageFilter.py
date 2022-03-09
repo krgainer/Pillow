@@ -230,7 +230,7 @@ class CONTOUR(BuiltinFilter):
     # fmt: off
     filterargs = (3, 3), 1, 255, (
         -1, -1, -1,
-        -1,  8, -1,
+        -1, 8, -1,
         -1, -1, -1,
     )
     # fmt: on
@@ -240,9 +240,9 @@ class DETAIL(BuiltinFilter):
     name = "Detail"
     # fmt: off
     filterargs = (3, 3), 6, 0, (
-        0,  -1,  0,
+        0, -1, 0,
         -1, 10, -1,
-        0,  -1,  0,
+        0, -1, 0,
     )
     # fmt: on
 
@@ -263,7 +263,7 @@ class EDGE_ENHANCE_MORE(BuiltinFilter):
     # fmt: off
     filterargs = (3, 3), 1, 0, (
         -1, -1, -1,
-        -1,  9, -1,
+        -1, 9, -1,
         -1, -1, -1,
     )
     # fmt: on
@@ -274,8 +274,8 @@ class EMBOSS(BuiltinFilter):
     # fmt: off
     filterargs = (3, 3), 1, 128, (
         -1, 0, 0,
-        0,  1, 0,
-        0,  0, 0,
+        0, 1, 0,
+        0, 0, 0,
     )
     # fmt: on
 
@@ -285,7 +285,7 @@ class FIND_EDGES(BuiltinFilter):
     # fmt: off
     filterargs = (3, 3), 1, 0, (
         -1, -1, -1,
-        -1,  8, -1,
+        -1, 8, -1,
         -1, -1, -1,
     )
     # fmt: on
@@ -317,11 +317,11 @@ class SMOOTH_MORE(BuiltinFilter):
     name = "Smooth More"
     # fmt: off
     filterargs = (5, 5), 100, 0, (
-        1, 1,  1, 1, 1,
-        1, 5,  5, 5, 1,
+        1, 1, 1, 1, 1,
+        1, 5, 5, 5, 1,
         1, 5, 44, 5, 1,
-        1, 5,  5, 5, 1,
-        1, 1,  1, 1, 1,
+        1, 5, 5, 5, 1,
+        1, 1, 1, 1, 1,
     )
     # fmt: on
 
@@ -448,7 +448,7 @@ class Color3DLUT(MultibandFilter):
         for b in range(size3D):
             for g in range(size2D):
                 for r in range(size1D):
-                    table[idx_out : idx_out + channels] = callback(
+                    table[idx_out: idx_out + channels] = callback(
                         r / (size1D - 1), g / (size2D - 1), b / (size3D - 1)
                     )
                     idx_out += channels
@@ -492,7 +492,7 @@ class Color3DLUT(MultibandFilter):
         for b in range(size3D):
             for g in range(size2D):
                 for r in range(size1D):
-                    values = self.table[idx_in : idx_in + ch_in]
+                    values = self.table[idx_in: idx_in + ch_in]
                     if with_normals:
                         values = callback(
                             r / (size1D - 1),
@@ -502,7 +502,7 @@ class Color3DLUT(MultibandFilter):
                         )
                     else:
                         values = callback(*values)
-                    table[idx_out : idx_out + ch_out] = values
+                    table[idx_out: idx_out + ch_out] = values
                     idx_in += ch_in
                     idx_out += ch_out
 

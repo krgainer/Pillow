@@ -157,7 +157,7 @@ class ImageDraw:
             self.draw.draw_lines(xy, ink, width)
             if joint == "curve" and width > 4:
                 if not isinstance(xy[0], (list, tuple)):
-                    xy = [tuple(xy[i : i + 2]) for i in range(0, len(xy), 2)]
+                    xy = [tuple(xy[i: i + 2]) for i in range(0, len(xy), 2)]
                 for i in range(1, len(xy) - 1):
                     point = xy[i]
                     angles = [
@@ -182,8 +182,8 @@ class ImageDraw:
                         )
 
                     flipped = (
-                        angles[1] > angles[0] and angles[1] - 180 > angles[0]
-                    ) or (angles[1] < angles[0] and angles[1] + 180 > angles[0])
+                                  angles[1] > angles[0] and angles[1] - 180 > angles[0]
+                              ) or (angles[1] < angles[0] and angles[1] + 180 > angles[0])
                     coords = [
                         (point[0] - width / 2 + 1, point[1] - width / 2 + 1),
                         (point[0] + width / 2 - 1, point[1] + width / 2 - 1),

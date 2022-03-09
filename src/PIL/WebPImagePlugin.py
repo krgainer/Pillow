@@ -9,7 +9,6 @@ try:
 except ImportError:
     SUPPORTED = False
 
-
 _VALID_WEBP_MODES = {"RGBX": True, "RGBA": True, "RGB": True}
 
 _VALID_WEBP_LEGACY_MODES = {"RGB": True, "RGBA": True}
@@ -35,7 +34,6 @@ def _accept(prefix):
 
 
 class WebPImageFile(ImageFile.ImageFile):
-
     format = "WEBP"
     format_description = "WebP image"
     __loaded = 0
@@ -183,7 +181,7 @@ def _save_all(im, fp, filename):
             # info["background"]. So it must be converted to an RGBA value
             palette = im.getpalette()
             if palette:
-                r, g, b = palette[background * 3 : (background + 1) * 3]
+                r, g, b = palette[background * 3: (background + 1) * 3]
                 background = (r, g, b, 0)
 
     duration = im.encoderinfo.get("duration", im.info.get("duration"))

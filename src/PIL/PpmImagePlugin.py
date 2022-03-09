@@ -45,7 +45,6 @@ def _accept(prefix):
 
 
 class PpmImageFile(ImageFile.ImageFile):
-
     format = "PPM"
     format_description = "Pbmplus image"
 
@@ -113,7 +112,7 @@ class PpmImageFile(ImageFile.ImageFile):
                 if maxval > 255:
                     if mode != "L":
                         raise ValueError(f"Too many colors for band: {maxval}")
-                    rawmode = "I;16B" if maxval < 2**16 else "I;32B"
+                    rawmode = "I;16B" if maxval < 2 ** 16 else "I;32B"
                     self.mode = "I"
         self._size = xsize, ysize
         self.tile = [("raw", (0, 0, xsize, ysize), self.fp.tell(), (rawmode, 0, 1))]
@@ -129,7 +128,7 @@ def _save(im, fp, filename):
     elif im.mode == "L":
         rawmode, head = "L", b"P5"
     elif im.mode == "I":
-        if im.getextrema()[1] < 2**16:
+        if im.getextrema()[1] < 2 ** 16:
             rawmode, head = "I;16B", b"P5"
         else:
             rawmode, head = "I;32B", b"P5"

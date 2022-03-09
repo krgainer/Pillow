@@ -303,9 +303,9 @@ class ImageFile(Image.Image):
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
-                not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= self.n_frames + self._min_frame
-            )
+            not (hasattr(self, "_n_frames") and self._n_frames is None)
+            and frame >= self.n_frames + self._min_frame
+        )
         ):
             raise EOFError("attempt to seek outside sequence")
 
@@ -428,7 +428,7 @@ class Parser:
         # calculate decoder offset
         self.offset = o
         if self.offset <= len(self.data):
-            self.data = self.data[self.offset :]
+            self.data = self.data[self.offset:]
             self.offset = 0
 
     def __enter__(self):

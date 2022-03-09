@@ -30,6 +30,7 @@ from . import Image, ImageFile
 from ._binary import i16le as i16
 from ._binary import o16le as o16
 
+
 #
 # read MSP files
 
@@ -44,7 +45,6 @@ def _accept(prefix):
 
 
 class MspImageFile(ImageFile.ImageFile):
-
     format = "MSP"
     format_description = "Windows Paint"
 
@@ -140,7 +140,7 @@ class MspDecoder(ImageFile.PyDecoder):
                         idx += 2
                     else:
                         runcount = runtype
-                        img.write(row[idx : idx + runcount])
+                        img.write(row[idx: idx + runcount])
                         idx += runcount
 
             except struct.error as e:
@@ -159,7 +159,6 @@ Image.register_decoder("MSP", MspDecoder)
 
 
 def _save(im, fp, filename):
-
     if im.mode != "1":
         raise OSError(f"cannot write mode {im.mode} as MSP")
 

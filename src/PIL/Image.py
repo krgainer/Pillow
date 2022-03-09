@@ -123,7 +123,6 @@ class DecompressionBombError(Exception):
 # Limit to around a quarter gigabyte for a 24-bit (3 bpp) image
 MAX_IMAGE_PIXELS = int(1024 * 1024 * 1024 // 4 // 3)
 
-
 try:
     # If the _imaging C module is not present, Pillow will not load.
     # Note that other modules should not refer to _imaging directly;
@@ -155,7 +154,6 @@ except ImportError as v:
     # Fail here anyway. Don't let people run with a mostly broken Pillow.
     # see docs/porting.rst
     raise
-
 
 # works everywhere, win for pypy, not cpython
 USE_CFFI_ACCESS = hasattr(sys, "pypy_version_info")
@@ -248,7 +246,6 @@ if hasattr(core, "DEFAULT_STRATEGY"):
     HUFFMAN_ONLY = core.HUFFMAN_ONLY
     RLE = core.RLE
     FIXED = core.FIXED
-
 
 # --------------------------------------------------------------------
 # Registries
@@ -413,7 +410,6 @@ def init():
 # Codec factories (used by tobytes/frombytes and ImageFile.load)
 
 def _getdecoder(mode, decoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -436,7 +432,6 @@ def _getdecoder(mode, decoder_name, args, extra=()):
 
 
 def _getencoder(mode, encoder_name, args, extra=()):
-
     # tweak arguments
     if args is None:
         args = ()
@@ -957,7 +952,7 @@ class Image:
                     transparency = convert_transparency(matrix, transparency)
                 elif len(mode) == 3:
                     transparency = tuple(
-                        convert_transparency(matrix[i * 4 : i * 4 + 4], transparency)
+                        convert_transparency(matrix[i * 4: i * 4 + 4], transparency)
                         for i in range(0, len(transparency))
                     )
                 new.info["transparency"] = transparency
@@ -1867,7 +1862,7 @@ class Image:
 
         # pick only the used colors from the palette
         for i, oldPosition in enumerate(dest_map):
-            palette_bytes += source_palette[oldPosition * 3 : oldPosition * 3 + 3]
+            palette_bytes += source_palette[oldPosition * 3: oldPosition * 3 + 3]
             new_positions[oldPosition] = i
 
         # replace the palette color id of all pixel with the new id
@@ -2065,7 +2060,7 @@ class Image:
 
         self.load()
 
-        return self._new(self.im.reduce(factor, box))
+        return self._new(self.im.reduce())
 
     def rotate(
         self,
@@ -2497,8 +2492,8 @@ class Image:
         if self.mode in ("LA", "RGBA") and resample != Resampling.NEAREST:
             return (
                 self.convert({"LA": "La", "RGBA": "RGBa"}[self.mode])
-                .transform(size, method, data, resample, fill, fillcolor)
-                .convert(self.mode)
+                    .transform(size, method, data, resample, fill, fillcolor)
+                    .convert(self.mode)
             )
 
         if isinstance(method, ImageTransformHandler):
@@ -2579,10 +2574,10 @@ class Image:
         ):
             if resample in (Resampling.BOX, Resampling.HAMMING, Resampling.LANCZOS):
                 message = {
-                    Resampling.BOX: "Image.Resampling.BOX",
-                    Resampling.HAMMING: "Image.Resampling.HAMMING",
-                    Resampling.LANCZOS: "Image.Resampling.LANCZOS",
-                }[resample] + f" ({resample}) cannot be used."
+                              Resampling.BOX: "Image.Resampling.BOX",
+                              Resampling.HAMMING: "Image.Resampling.HAMMING",
+                              Resampling.LANCZOS: "Image.Resampling.LANCZOS",
+                          }[resample] + f" ({resample}) cannot be used."
             else:
                 message = f"Unknown resampling filter ({resample})."
 
@@ -2597,7 +2592,6 @@ class Image:
             raise ValueError(
                 f'{message} Use ' + ", ".join(filters[:-1]) + " or " + filters[-1]
             )
-
 
         image.load()
 
@@ -3531,7 +3525,7 @@ class Exif(MutableMapping):
                         makernote = {}
                         for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
-                                "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
+                                "<HHL4s", ifd_data[i * 12 + 2: (i + 1) * 12 + 2]
                             )
                             try:
                                 (
@@ -3543,7 +3537,7 @@ class Exif(MutableMapping):
                             size = count * unit_size
                             if size > 4:
                                 (offset,) = struct.unpack("<L", data)
-                                data = ifd_data[offset - 12 : offset + size - 12]
+                                data = ifd_data[offset - 12: offset + size - 12]
                             else:
                                 data = data[:size]
 
@@ -3566,7 +3560,7 @@ class Exif(MutableMapping):
                         makernote = {}
                         for i in range(struct.unpack(">H", tag_data[:2])[0]):
                             ifd_tag, typ, count, data = struct.unpack(
-                                ">HHL4s", tag_data[i * 12 + 2 : (i + 1) * 12 + 2]
+                                ">HHL4s", tag_data[i * 12 + 2: (i + 1) * 12 + 2]
                             )
                             if ifd_tag == 0x1101:
                                 # CameraInfo

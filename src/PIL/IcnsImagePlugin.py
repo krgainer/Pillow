@@ -135,7 +135,6 @@ def _extracted_from_read_png_or_jpeg2000_15(fobj, start, length):
 
 
 class IcnsFile:
-
     SIZES = {
         (512, 512, 2): [(b"ic10", read_png_or_jpeg2000)],
         (512, 512, 1): [(b"ic09", read_png_or_jpeg2000)],

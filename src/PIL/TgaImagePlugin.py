@@ -21,8 +21,8 @@ import warnings
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
-from ._binary import o8
 from ._binary import o16le as o16
+from ._binary import o8
 
 #
 # --------------------------------------------------------------------
@@ -46,7 +46,6 @@ MODES = {
 
 
 class TgaImageFile(ImageFile.ImageFile):
-
     format = "TGA"
     format_description = "Targa"
 
@@ -169,7 +168,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, bits, colormaptype, imagetype = SAVE[im.mode]
     except KeyError as e:

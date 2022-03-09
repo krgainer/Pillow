@@ -42,17 +42,15 @@ from enum import IntEnum
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16be as i16
 from ._binary import i32be as i32
-from ._binary import o8
 from ._binary import o16be as o16
 from ._binary import o32be as o32
+from ._binary import o8
 
 logger = logging.getLogger(__name__)
 
 is_cid = re.compile(rb"\w\w\w\w").match
 
-
 _MAGIC = b"\211PNG\r\n\032\n"
-
 
 _MODES = {
     # supported bits/color combinations, and corresponding modes/rawmodes
@@ -77,7 +75,6 @@ _MODES = {
     (8, 6): ("RGBA", "RGBA"),
     (16, 6): ("RGBA", "RGBA;16B"),
 }
-
 
 _simple_palette = re.compile(b"^\xff*\x00\xff*$")
 
@@ -134,7 +131,7 @@ def __getattr__(name):
     deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Disposal: "APNG_DISPOSE_", Blend: "APNG_BLEND_"}.items():
         if name.startswith(prefix):
-            name = name[len(prefix) :]
+            name = name[len(prefix):]
             if name in enum.__members__:
                 warnings.warn(
                     prefix
@@ -420,7 +417,7 @@ class PngStream(ChunkStream):
         if comp_method != 0:
             raise SyntaxError(f"Unknown compression method {comp_method} in iCCP chunk")
         try:
-            icc_profile = _safe_zlib_decompress(s[i + 2 :])
+            icc_profile = _safe_zlib_decompress(s[i + 2:])
         except ValueError:
             if ImageFile.LOAD_TRUNCATED_IMAGES:
                 icc_profile = None
@@ -688,7 +685,6 @@ def _accept(prefix):
 
 
 class PngImageFile(ImageFile.ImageFile):
-
     format = "PNG"
     format_description = "Portable network graphics"
 

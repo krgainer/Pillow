@@ -62,7 +62,7 @@ def __getattr__(name):
         AlphaEncoding: "BLP_ALPHA_ENCODING_",
     }.items():
         if name.startswith(prefix):
-            name = name[len(prefix) :]
+            name = name[len(prefix):]
             if name in enum.__members__:
                 warnings.warn(
                     prefix
@@ -150,7 +150,7 @@ def decode_dxt3(data):
 
     for block in range(blocks):
         idx = block * 16
-        block = data[idx : idx + 16]
+        block = data[idx: idx + 16]
         # Decode next 16-byte block.
         bits = struct.unpack_from("<8B", block)
         color0, color1 = struct.unpack_from("<HH", block, 8)
@@ -203,7 +203,7 @@ def decode_dxt5(data):
 
     for block in range(blocks):
         idx = block * 16
-        block = data[idx : idx + 16]
+        block = data[idx: idx + 16]
         # Decode next 16-byte block.
         a0, a1 = struct.unpack_from("<BB", block)
 
@@ -444,7 +444,7 @@ class BLPEncoder(ImageFile.PyEncoder):
         data = b""
         palette = self.im.getpalette("RGBA", "RGBA")
         for i in range(256):
-            r, g, b, a = palette[i * 4 : (i + 1) * 4]
+            r, g, b, a = palette[i * 4: (i + 1) * 4]
             data += struct.pack("<4B", b, g, r, a)
         return data
 

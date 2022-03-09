@@ -23,6 +23,7 @@ import re
 
 from . import Image
 
+
 #
 # helpers
 
@@ -91,7 +92,7 @@ def autocontrast(image, cutoff=0, ignore=None, mask=None, preserve_tone=False):
 
     lut = []
     for layer in range(0, len(histogram), 256):
-        h = histogram[layer : layer + 256]
+        h = histogram[layer: layer + 256]
         if ignore is not None:
             # get rid of outliers
             try:
@@ -365,7 +366,7 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = [_f for _f in h[b : b + 256] if _f]
+        histo = [_f for _f in h[b: b + 256] if _f]
         if len(histo) <= 1:
             lut.extend(list(range(256)))
         elif step := (functools.reduce(operator.add, histo) - histo[-1]) // 255:

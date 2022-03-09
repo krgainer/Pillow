@@ -61,7 +61,7 @@ PDFDocEncoding = {
 
 def decode_text(b):
     if b[: len(codecs.BOM_UTF16_BE)] == codecs.BOM_UTF16_BE:
-        return b[len(codecs.BOM_UTF16_BE) :].decode("utf_16_be")
+        return b[len(codecs.BOM_UTF16_BE):].decode("utf_16_be")
     else:
         return "".join(PDFDocEncoding.get(byte, chr(byte)) for byte in b)
 
@@ -155,8 +155,8 @@ class XrefTable:
 
     def keys(self):
         return (
-            set(self.existing_entries.keys()) - set(self.deleted_entries.keys())
-        ) | set(self.new_entries.keys())
+                   set(self.existing_entries.keys()) - set(self.deleted_entries.keys())
+               ) | set(self.new_entries.keys())
 
     def write(self, f):
         keys = sorted(set(self.new_entries.keys()) | set(self.deleted_entries.keys()))
@@ -212,8 +212,8 @@ class PdfName:
 
     def __eq__(self, other):
         return (
-            isinstance(other, PdfName) and other.name == self.name
-        ) or other == self.name
+                   isinstance(other, PdfName) and other.name == self.name
+               ) or other == self.name
 
     def __hash__(self):
         return hash(self.name)
@@ -640,7 +640,7 @@ class PdfParser:
     def read_prev_trailer(self, xref_section_offset):
         trailer_offset = self.read_xref_table(xref_section_offset=xref_section_offset)
         m = self.re_trailer_prev.search(
-            self.buf[trailer_offset : trailer_offset + 16384]
+            self.buf[trailer_offset: trailer_offset + 16384]
         )
         check_format_condition(m, "previous trailer not found")
         trailer_data = m.group(1)
@@ -812,7 +812,7 @@ class PdfParser:
                         "bad or missing Length in stream dict (%r)"
                         % result.get(b"Length", None)
                     ) from e
-                stream_data = data[m.end() : m.end() + stream_len]
+                stream_data = data[m.end(): m.end() + stream_len]
                 m = cls.re_stream_end.match(data, m.end() + stream_len)
                 check_format_condition(m, "stream end not found")
                 offset = m.end()
@@ -856,7 +856,7 @@ class PdfParser:
         if m := cls.re_string_lit.match(data, offset):
             return cls.get_literal_string(data, m.end())
         # return None, offset  # fallback (only for debugging)
-        raise PdfFormatError("unrecognized object: " + repr(data[offset : offset + 32]))
+        raise PdfFormatError("unrecognized object: " + repr(data[offset: offset + 32]))
 
     re_lit_str_token = re.compile(
         rb"(\\[nrtbf()\\])|(\\[0-9]{1,3})|(\\(\r\n|\r|\n))|(\r\n|\r|\n)|(\()|(\))"
@@ -885,7 +885,7 @@ class PdfParser:
         nesting_depth = 0
         result = bytearray()
         for m in cls.re_lit_str_token.finditer(data, offset):
-            result.extend(data[offset : m.start()])
+            result.extend(data[offset: m.start()])
             if m.group(1):
                 result.extend(cls.escaped_chars[m.group(1)[1]])
             elif m.group(2):
@@ -930,6 +930,7 @@ class PdfParser:
                     subsection_found, "xref subsection start not found"
                 )
                 break
+
     def read_xref_table(self, xref_section_offset):
         subsection_found = False
         m = self.re_xref_section_start.match(

@@ -4,7 +4,6 @@ import sys
 import warnings
 
 import PIL
-
 from . import Image
 
 modules = {

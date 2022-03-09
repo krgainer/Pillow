@@ -57,7 +57,9 @@ if hasattr(Image.core, "drawwmf"):
                 -1,
             )
 
+
     register_handler(WmfHandler())
+
 
 #
 # --------------------------------------------------------------------
@@ -75,7 +77,6 @@ def _accept(prefix):
 
 
 class WmfStubImageFile(ImageFile.StubImageFile):
-
     format = "WMF"
     format_description = "Windows Metafile"
 

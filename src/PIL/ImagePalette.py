@@ -61,7 +61,7 @@ class ImagePalette:
         mode_len = len(self.mode)
         self.colors = {}
         for i in range(0, len(self.palette), mode_len):
-            color = tuple(self.palette[i : i + mode_len])
+            color = tuple(self.palette[i: i + mode_len])
             if color in self.colors:
                 continue
             self.colors[color] = i // mode_len
@@ -146,7 +146,7 @@ class ImagePalette:
                     self._palette = (
                         self.palette[: index * 3]
                         + bytes(color)
-                        + self.palette[index * 3 + 3 :]
+                        + self.palette[index * 3 + 3:]
                     )
                 else:
                     self._palette += bytes(color)
@@ -227,7 +227,6 @@ def wedge(mode="RGB"):
 
 
 def load(filename):
-
     # FIXME: supports GIMP gradients only
 
     with open(filename, "rb") as fp:

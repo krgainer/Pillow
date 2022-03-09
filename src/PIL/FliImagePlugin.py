@@ -21,6 +21,7 @@ from ._binary import i16le as i16
 from ._binary import i32le as i32
 from ._binary import o8
 
+
 #
 # decoder
 
@@ -39,7 +40,6 @@ def _accept(prefix):
 
 
 class FliImageFile(ImageFile.ImageFile):
-
     format = "FLI"
     format_description = "Autodesk FLI/FLC Animation"
     _close_exclusive_fp_after_loading = False

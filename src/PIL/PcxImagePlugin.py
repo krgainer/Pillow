@@ -30,8 +30,8 @@ import logging
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
-from ._binary import o8
 from ._binary import o16le as o16
+from ._binary import o8
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,6 @@ def _accept(prefix):
 
 
 class PcxImageFile(ImageFile.ImageFile):
-
     format = "PCX"
     format_description = "Paintbrush"
 
@@ -93,7 +92,7 @@ class PcxImageFile(ImageFile.ImageFile):
             if len(s) == 769 and s[0] == 12:
                 # check if the palette is linear greyscale
                 for i in range(256):
-                    if s[i * 3 + 1 : i * 3 + 4] != o8(i) * 3:
+                    if s[i * 3 + 1: i * 3 + 4] != o8(i) * 3:
                         mode = rawmode = "P"
                         break
                 if mode == "P":
@@ -140,7 +139,6 @@ SAVE = {
 
 
 def _save(im, fp, filename):
-
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError as e:

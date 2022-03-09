@@ -19,6 +19,7 @@ from . import BmpImagePlugin, Image
 from ._binary import i16le as i16
 from ._binary import i32le as i32
 
+
 #
 # --------------------------------------------------------------------
 
@@ -32,7 +33,6 @@ def _accept(prefix):
 
 
 class CurImageFile(BmpImagePlugin.BmpImageFile):
-
     format = "CUR"
     format_description = "Windows Cursor"
 

@@ -99,6 +99,7 @@ VERSION = "1.0.0 pil"
 
 core = _imagingcms
 
+
 #
 # intent/direction values
 
@@ -120,7 +121,7 @@ def __getattr__(name):
     deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     for enum, prefix in {Intent: "INTENT_", Direction: "DIRECTION_"}.items():
         if name.startswith(prefix):
-            name = name[len(prefix) :]
+            name = name[len(prefix):]
             if name in enum.__members__:
                 warnings.warn(
                     prefix
@@ -162,7 +163,7 @@ FLAGS = {
     "SOFTPROOFING": 16384,  # Do softproofing
     "PRESERVEBLACK": 32768,  # Black preservation
     "NODEFAULTRESOURCEDEF": 16777216,  # CRD special
-    "GRIDPOINTS": lambda n: ((n) & 0xFF) << 16,  # Gridpoints
+    "GRIDPOINTS": lambda n: (n & 0xFF) << 16,  # Gridpoints
 }
 
 _MAX_FLAG = 0
@@ -223,7 +224,6 @@ class ImageCmsProfile:
 
 
 class ImageCmsTransform(Image.ImagePointHandler):
-
     """
     Transform.  This can be used with the procedural API, or with the standard
     :py:func:`~PIL.Image.Image.point` method.
@@ -310,7 +310,6 @@ def get_display_profile(handle=None):
 
 
 class PyCMSError(Exception):
-
     """(pyCMS) Exception class.
     This is used for all errors in the pyCMS API."""
 
@@ -1016,4 +1015,4 @@ def versions():
     (pyCMS) Fetches versions.
     """
 
-    return (VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__)
+    return VERSION, core.littlecms_version, sys.version.split()[0], Image.__version__

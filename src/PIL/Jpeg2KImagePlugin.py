@@ -121,7 +121,7 @@ def _parse_codestream(fp):
     else:
         mode = None
 
-    return (size, mode)
+    return size, mode
 
 
 def _res_to_dpi(num, denom, exp):
@@ -129,7 +129,7 @@ def _res_to_dpi(num, denom, exp):
     calculated as (num / denom) * 10^exp and stored in dots per meter,
     to floating-point dots per inch."""
     if denom != 0:
-        return (254 * num * (10**exp)) / (10000 * denom)
+        return (254 * num * (10 ** exp)) / (10000 * denom)
 
 
 def _parse_jp2_header(fp):
@@ -251,7 +251,7 @@ class Jpeg2KImageFile(ImageFile.ImageFile):
             self.info["dpi"] = dpi
 
     @property
-    def reduce(self):
+    def reduce(self, **kwargs):
         # https://github.com/python-pillow/Pillow/issues/4343 found that the
         # new Image 'reduce' method was shadowed by this plugin's 'reduce'
         # property. This attempts to allow for both scenarios
@@ -306,11 +306,11 @@ def _save(im, fp, filename):
     if quality_layers is not None and not (
         isinstance(quality_layers, (list, tuple))
         and all(
-            [
-                isinstance(quality_layer, (int, float))
-                for quality_layer in quality_layers
-            ]
-        )
+        [
+            isinstance(quality_layer, (int, float))
+            for quality_layer in quality_layers
+        ]
+    )
     ):
         raise ValueError("quality_layers must be a sequence of numbers")
 

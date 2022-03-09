@@ -21,6 +21,7 @@
 from . import Image, ImageFile, JpegImagePlugin
 from ._binary import i16be as i16
 
+
 # def _accept(prefix):
 #     return JpegImagePlugin._accept(prefix)
 
@@ -35,7 +36,6 @@ def _save(im, fp, filename):
 
 
 class MpoImageFile(JpegImagePlugin.JpegImageFile):
-
     format = "MPO"
     format_description = "MPO (CIPA DC-007)"
     _close_exclusive_fp_after_loading = False

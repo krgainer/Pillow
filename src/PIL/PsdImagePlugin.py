@@ -19,9 +19,9 @@
 import io
 
 from . import Image, ImageFile, ImagePalette
-from ._binary import i8
 from ._binary import i16be as i16
 from ._binary import i32be as i32
+from ._binary import i8
 from ._binary import si16be as si16
 
 MODES = {
@@ -51,7 +51,6 @@ def _accept(prefix):
 
 
 class PsdImageFile(ImageFile.ImageFile):
-
     format = "PSD"
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
@@ -266,7 +265,6 @@ def _layerinfo(fp, ct_bytes):
 
 
 def _maketile(file, mode, bbox, channels):
-
     tile = None
     read = file.read
 

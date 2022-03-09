@@ -31,8 +31,9 @@ import subprocess
 
 from . import Image, ImageChops, ImageFile, ImagePalette, ImageSequence
 from ._binary import i16le as i16
-from ._binary import o8
 from ._binary import o16le as o16
+from ._binary import o8
+
 
 # --------------------------------------------------------------------
 # Identify/read GIF files
@@ -48,7 +49,6 @@ def _accept(prefix):
 
 
 class GifImageFile(ImageFile.ImageFile):
-
     format = "GIF"
     format_description = "Compuserve GIF"
     _close_exclusive_fp_after_loading = False
@@ -269,7 +269,7 @@ class GifImageFile(ImageFile.ImageFile):
 
         def _rgb(color):
             if frame_palette:
-                color = tuple(frame_palette.palette[color * 3 : color * 3 + 3])
+                color = tuple(frame_palette.palette[color * 3: color * 3 + 3])
             else:
                 color = (color, color, color)
             return color
@@ -465,7 +465,7 @@ def _normalize_palette(im, palette, info):
     if palette:
         used_palette_colors = []
         for i in range(0, len(source_palette), 3):
-            source_color = tuple(source_palette[i : i + 3])
+            source_color = tuple(source_palette[i: i + 3])
             try:
                 index = im.palette.colors[source_color]
             except KeyError:
@@ -509,7 +509,6 @@ def _write_single_frame(im, fp, palette):
 
 
 def _write_multiple_frames(im, fp, palette):
-
     duration = im.encoderinfo.get("duration", im.info.get("duration"))
     disposal = im.encoderinfo.get("disposal", im.info.get("disposal"))
 
@@ -665,7 +664,7 @@ def _write_local_header(fp, im, offset, flags):
         if isinstance(comment, str):
             comment = comment.encode()
         for i in range(0, len(comment), 255):
-            subblock = comment[i : i + 255]
+            subblock = comment[i: i + 255]
             fp.write(o8(len(subblock)) + subblock)
         fp.write(o8(0))
     if "loop" in im.encoderinfo:
@@ -702,7 +701,6 @@ def _write_local_header(fp, im, offset, flags):
 
 
 def _save_netpbm(im, fp, filename):
-
     # Unused by default.
     # To use, uncomment the register_save call at the end of the file.
     #

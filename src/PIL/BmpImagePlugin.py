@@ -27,9 +27,9 @@
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
 from ._binary import i32le as i32
-from ._binary import o8
 from ._binary import o16le as o16
 from ._binary import o32le as o32
+from ._binary import o8
 
 #
 # --------------------------------------------------------------------
@@ -102,7 +102,7 @@ class BmpImageFile(ImageFile.ImageFile):
             file_info["height"] = (
                 i32(header_data, 4)
                 if not file_info["y_flip"]
-                else 2**32 - i32(header_data, 4)
+                else 2 ** 32 - i32(header_data, 4)
             )
             file_info["planes"] = i16(header_data, 8)
             file_info["bits"] = i16(header_data, 10)
@@ -229,7 +229,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
                 # ----------------- Check if greyscale and ignore palette if so
                 for ind, val in enumerate(indices):
-                    rgb = palette[ind * padding : ind * padding + 3]
+                    rgb = palette[ind * padding: ind * padding + 3]
                     if rgb != o8(val) * 3:
                         greyscale = False
 
@@ -275,7 +275,6 @@ class BmpImageFile(ImageFile.ImageFile):
 # Image plugin for the DIB format (BMP alias)
 # =============================================================================
 class DibImageFile(BmpImageFile):
-
     format = "DIB"
     format_description = "Windows Bitmap"
 
@@ -322,7 +321,7 @@ def _save(im, fp, filename, bitmap_header=True):
     if bitmap_header:
         offset = 14 + header + colors * 4
         file_size = offset + image
-        if file_size > 2**32 - 1:
+        if file_size > 2 ** 32 - 1:
             raise ValueError("File size is too large for the BMP format")
         fp.write(
             b"BM"  # file type (magic)

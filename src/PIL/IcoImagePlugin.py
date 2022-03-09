@@ -200,11 +200,11 @@ class IcoFile:
 
     # TODO Rename this here and in `frame`
     def _extracted_from_frame_16(self, header):
-            # XOR + AND mask bmp frame
+        # XOR + AND mask bmp frame
         result = BmpImagePlugin.DibImageFile(self.buf)
         Image._decompression_bomb_check(result.size)
 
-            # change tile dimension to only encompass XOR image
+        # change tile dimension to only encompass XOR image
         result._size = result.size[0], int(result.size[1] / 2)
         d, e, o, a = result.tile[0]
         result.tile[0] = d, (0, 0) + result.size, o, a
@@ -219,14 +219,14 @@ class IcoFile:
 
             # Back up to start of bmp data
             self.buf.seek(o)
-                # extract every 4th byte (eg. 3,7,11,15,...)
+            # extract every 4th byte (eg. 3,7,11,15,...)
             alpha_bytes = self.buf.read(result.size[0] * result.size[1] * 4)[3::4]
 
-                # convert to an 8bpp grayscale image
+            # convert to an 8bpp grayscale image
             mask = Image.frombuffer("L", result.size, alpha_bytes, "raw", ("L", 0, -1))
         else:
             mask = self._extracted_from_frame_47(result, header)
-                    # now we have two images, im is XOR image and mask is AND image
+            # now we have two images, im is XOR image and mask is AND image
 
             # apply mask image as alpha channel
         result = result.convert("RGBA")
@@ -252,12 +252,12 @@ class IcoFile:
         mask_data = self.buf.read(total_bytes)
 
         return Image.frombuffer(
-                    "1",  # 1 bpp
-                    im.size,  # (w, h)
-                    mask_data,  # source chars
-                    "raw",  # raw decoder
-                    ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
-                )
+            "1",  # 1 bpp
+            im.size,  # (w, h)
+            mask_data,  # source chars
+            "raw",  # raw decoder
+            ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
+        )
 
 
 ##

@@ -42,10 +42,11 @@ import tempfile
 import warnings
 
 from . import Image, ImageFile, TiffImagePlugin
+from .JpegPresets import presets
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from .JpegPresets import presets
+
 
 #
 # Parser
@@ -108,7 +109,7 @@ def APP(self, marker):
         # parse the image resource block
         offset = 14
         photoshop = self.info.setdefault("photoshop", {})
-        while s[offset : offset + 4] == b"8BIM":
+        while s[offset: offset + 4] == b"8BIM":
             try:
                 offset += 4
                 # resource code
@@ -122,7 +123,7 @@ def APP(self, marker):
                 # resource data block
                 size = i32(s, offset)
                 offset += 4
-                data = s[offset : offset + size]
+                data = s[offset: offset + size]
                 if code == 0x03ED:  # ResolutionInfo
                     data = {
                         "XResolution": i32(data, 0) / 65536,
@@ -228,7 +229,7 @@ def SOF(self, marker):
         self.icclist = []
 
     for i in range(6, len(s), 3):
-        t = s[i : i + 3]
+        t = s[i: i + 3]
         # 4-tuples: id, vsamp, hsamp, qtable
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
@@ -336,7 +337,6 @@ def _accept(prefix):
 
 
 class JpegImageFile(ImageFile.ImageFile):
-
     format = "JPEG"
     format_description = "JPEG (ISO 10918)"
 
@@ -580,9 +580,9 @@ RAWMODE = {
 
 # fmt: off
 zigzag_index = (
-    0,  1,  5,  6, 14, 15, 27, 28,
-    2,  4,  7, 13, 16, 26, 29, 42,
-    3,  8, 12, 17, 25, 30, 41, 43,
+    0, 1, 5, 6, 14, 15, 27, 28,
+    2, 4, 7, 13, 16, 26, 29, 42,
+    3, 8, 12, 17, 25, 30, 41, 43,
     9, 11, 18, 24, 31, 40, 44, 53,
     10, 19, 23, 32, 39, 45, 52, 54,
     20, 22, 33, 38, 46, 51, 55, 60,
@@ -595,6 +595,8 @@ samplings = {
     (2, 1, 1, 1, 1, 1): 1,
     (2, 2, 1, 1, 1, 1): 2,
 }
+
+
 # fmt: on
 
 
@@ -622,7 +624,6 @@ def get_sampling(im):
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode = RAWMODE[im.mode]
     except KeyError as e:
@@ -681,7 +682,7 @@ def _save(im, fp, filename):
             except ValueError as e:
                 raise ValueError("Invalid quantization table") from e
             else:
-                qtables = [lines[s : s + 64] for s in range(0, len(lines), 64)]
+                qtables = [lines[s: s + 64] for s in range(0, len(lines), 64)]
         if isinstance(qtables, (tuple, list, dict)):
             if isinstance(qtables, dict):
                 qtables = [

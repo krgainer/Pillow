@@ -19,7 +19,6 @@ the corresponding code in GIMP, written by Federico Mena Quintero.
 See the GIMP distribution for more information.)
 """
 
-
 from math import log, pi, sin, sqrt
 
 from ._binary import o8
@@ -57,7 +56,6 @@ SEGMENTS = [linear, curved, sine, sphere_increasing, sphere_decreasing]
 
 
 class GradientFile:
-
     gradient = None
 
     def getpalette(self, entries=256):

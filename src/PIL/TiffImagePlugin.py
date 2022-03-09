@@ -50,10 +50,10 @@ from fractions import Fraction
 from numbers import Number, Rational
 
 from . import Image, ImageFile, ImageOps, ImagePalette, TiffTags
+from .TiffTags import TYPES
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._binary import o8
-from .TiffTags import TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -577,9 +577,9 @@ class ImageFileDirectory_v2(MutableMapping):
                         else TiffTags.SIGNED_RATIONAL
                     )
                 elif all(isinstance(v, int) for v in values):
-                    if all(0 <= v < 2**16 for v in values):
+                    if all(0 <= v < 2 ** 16 for v in values):
                         self.tagtype[tag] = TiffTags.SHORT
-                    elif all(-(2**15) < v < 2**15 for v in values):
+                    elif all(-(2 ** 15) < v < 2 ** 15 for v in values):
                         self.tagtype[tag] = TiffTags.SIGNED_SHORT
                     else:
                         self.tagtype[tag] = (
@@ -734,7 +734,7 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(5)
     def write_rational(self, *values):
         return b"".join(
-            self._pack("2L", *_limit_rational(frac, 2**32 - 1)) for frac in values
+            self._pack("2L", *_limit_rational(frac, 2 ** 32 - 1)) for frac in values
         )
 
     @_register_loader(7, 1)
@@ -757,7 +757,7 @@ class ImageFileDirectory_v2(MutableMapping):
     @_register_writer(10)
     def write_signed_rational(self, *values):
         return b"".join(
-            self._pack("2l", *_limit_signed_rational(frac, 2**31 - 1, -(2**31)))
+            self._pack("2l", *_limit_signed_rational(frac, 2 ** 31 - 1, -(2 ** 31)))
             for frac in values
         )
 
@@ -1023,7 +1023,6 @@ ImageFileDirectory = ImageFileDirectory_v1
 
 
 class TiffImageFile(ImageFile.ImageFile):
-
     format = "TIFF"
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
@@ -1144,11 +1143,11 @@ class TiffImageFile(ImageFile.ImageFile):
             while val[:4] == b"8BIM":
                 id = i16(val[4:6])
                 n = math.ceil((val[6] + 1) / 2) * 2
-                size = i32(val[6 + n : 10 + n])
-                data = val[10 + n : 10 + n + size]
+                size = i32(val[6 + n: 10 + n])
+                data = val[10 + n: 10 + n + size]
                 blocks[id] = {"data": data}
 
-                val = val[math.ceil((10 + n + size) / 2) * 2 :]
+                val = val[math.ceil((10 + n + size) / 2) * 2:]
         return blocks
 
     def load(self):
@@ -1534,7 +1533,6 @@ SAVE_INFO = {
 
 
 def _save(im, fp, filename):
-
     try:
         rawmode, prefix, photo, format, bits, extra = SAVE_INFO[im.mode]
     except KeyError as e:
@@ -1668,7 +1666,7 @@ def _save(im, fp, filename):
     strip_byte_counts = 1 if stride == 0 else stride * rows_per_strip
     strips_per_image = (im.size[1] + rows_per_strip - 1) // rows_per_strip
     ifd[ROWSPERSTRIP] = rows_per_strip
-    if strip_byte_counts >= 2**16:
+    if strip_byte_counts >= 2 ** 16:
         ifd.tagtype[STRIPBYTECOUNTS] = TiffTags.LONG
     ifd[STRIPBYTECOUNTS] = (strip_byte_counts,) * (strips_per_image - 1) + (
         stride * im.size[1] - strip_byte_counts * (strips_per_image - 1),

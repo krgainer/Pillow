@@ -33,7 +33,6 @@ def _accept(prefix):
 
 
 class XpmImageFile(ImageFile.ImageFile):
-
     format = "XPM"
     format_description = "X11 Pixel Map"
 
@@ -114,7 +113,7 @@ class XpmImageFile(ImageFile.ImageFile):
         s = [None] * ysize
 
         for i in range(ysize):
-            s[i] = self.fp.readline()[1 : xsize + 1].ljust(xsize)
+            s[i] = self.fp.readline()[1: xsize + 1].ljust(xsize)
 
         return b"".join(s)
 

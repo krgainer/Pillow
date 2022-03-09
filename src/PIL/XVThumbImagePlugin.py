@@ -39,7 +39,6 @@ def _accept(prefix):
 
 
 class XVThumbImageFile(ImageFile.ImageFile):
-
     format = "XVThumb"
     format_description = "XV thumbnail image"
 

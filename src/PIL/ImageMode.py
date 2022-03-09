@@ -65,7 +65,10 @@ def getmode(mode):
         }
 
         # mapping modes
-        for i16mode, typestr in {"I;16": "<u2", "I;16S": "<i2", "I;16L": "<u2", "I;16LS": "<i2", "I;16B": ">u2", "I;16BS": ">i2", "I;16N": f'{endian}u2', "I;16NS": f'{endian}i2', "I;32": "<u4", "I;32B": ">u4", "I;32L": "<u4", "I;32S": "<i4", "I;32BS": ">i4", "I;32LS": "<i4"}.items():
+        for i16mode, typestr in {"I;16": "<u2", "I;16S": "<i2", "I;16L": "<u2", "I;16LS": "<i2", "I;16B": ">u2",
+                                 "I;16BS": ">i2", "I;16N": f'{endian}u2', "I;16NS": f'{endian}i2', "I;32": "<u4",
+                                 "I;32B": ">u4", "I;32L": "<u4", "I;32S": "<i4", "I;32BS": ">i4",
+                                 "I;32LS": "<i4"}.items():
             modes[i16mode] = ModeDescriptor(i16mode, ("I",), "L", "L", typestr)
         # set global mode cache atomically
         _modes = modes
