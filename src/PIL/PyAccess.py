@@ -126,6 +126,12 @@ class PyAccess:
             raise ValueError("pixel location out of range")
         return xy
 
+    def set_pixel(self, x, y, color):
+        pass
+
+    def get_pixel(self, x, y):
+        pass
+
 
 class _PyAccess32_2(PyAccess):
     """PA, LA, stored in first and last bytes of a 32 bit word"""
