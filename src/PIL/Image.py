@@ -837,7 +837,7 @@ class Image:
         :returns: An image access object.
         :rtype: :ref:`PixelAccess` or :py:class:`PIL.PyAccess`
         """
-        if self.im and self.palette and self.palette.dirty:
+        if self.im is not None and self.palette and self.palette.dirty:
             # realize palette
             mode, arr = self.palette.getdata()
             self.im.putpalette(mode, arr)
@@ -854,7 +854,7 @@ class Image:
                 self.palette.mode = palette_mode
                 self.palette.palette = self.im.getpalette(palette_mode, palette_mode)
 
-        if self.im:
+        if self.im is not None:
             if cffi and USE_CFFI_ACCESS:
                 if self.pyaccess:
                     return self.pyaccess
@@ -965,7 +965,9 @@ class Image:
         delete_trns = False
         # transparency handling
         if has_transparency:
-            if self.mode in ("1", "L", "I", "RGB") and mode == "RGBA":
+            if (self.mode in ("1", "L", "I") and mode in ("LA", "RGBA")) or (
+                self.mode == "RGB" and mode == "RGBA"
+            ):
                 # Use transparent conversion to promote from transparent
                 # color to an alpha channel.
                 new_im = self._new(
@@ -1549,8 +1551,8 @@ class Image:
         also use color strings as supported by the ImageColor module.
 
         If a mask is given, this method updates only the regions
-        indicated by the mask.  You can use either "1", "L" or "RGBA"
-        images (in the latter case, the alpha band is used as mask).
+        indicated by the mask. You can use either "1", "L", "LA", "RGBA"
+        or "RGBa" images (if present, the alpha band is used as mask).
         Where the mask is 255, the given image is copied as is.  Where
         the mask is 0, the current value is preserved.  Intermediate
         values will mix the two images together, including their alpha
@@ -1598,7 +1600,7 @@ class Image:
         elif isImageType(im):
             im.load()
             if self.mode != im.mode:
-                if self.mode != "RGB" or im.mode not in ("RGBA", "RGBa"):
+                if self.mode != "RGB" or im.mode not in ("LA", "RGBA", "RGBa"):
                     # should use an adapter for this!
                     im = im.convert(self.mode)
             im = im.im
