@@ -74,10 +74,8 @@ class BmpImageFile(ImageFile.ImageFile):
         read, seek = self.fp.read, self.fp.seek
         if header:
             seek(header)
-        file_info = {}
+        file_info = {"header_size": i32(read(4)), "direction": -1}
         # read bmp header size @offset 14 (this is part of the header size)
-        file_info["header_size"] = i32(read(4))
-        file_info["direction"] = -1
 
         # -------------------- If requested, read header at a specific position
         # read the rest of the bmp header, without its size

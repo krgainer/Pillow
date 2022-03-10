@@ -174,7 +174,7 @@ class ChunkStream:
 
     def read(self):
         """Fetch a new chunk. Returns header information."""
-        cid = None
+        None
 
         if self.queue:
             cid, pos, length = self.queue.pop()

@@ -912,6 +912,10 @@ class ImageFileDirectory_v2(MutableMapping):
         fp.write(result)
         return offset + len(result)
 
+    @legacy_api.setter
+    def legacy_api(self, value):
+        self._legacy_api = value
+
 
 ImageFileDirectory_v2._load_dispatch = _load_dispatch
 ImageFileDirectory_v2._write_dispatch = _write_dispatch
