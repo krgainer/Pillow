@@ -978,3 +978,6 @@ class PdfParser:
             else:
                 pages.extend(self.linearize_page_tree(node=kid_object))
         return pages
+
+    def read_indirect(self, kid):
+        pass

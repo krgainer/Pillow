@@ -39,6 +39,10 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
     format_description = "Microsoft Image Composer"
     _close_exclusive_fp_after_loading = False
 
+    def __init__(self, fp=None, filename=None):
+        super().__init__(fp, filename)
+        self.frame = None
+
     def _open(self):
 
         # read the OLE directory and see if this is a likely

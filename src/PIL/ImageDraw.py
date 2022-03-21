@@ -183,7 +183,7 @@ class ImageDraw:
 
                     flipped = (
                                   angles[1] > angles[0] and angles[1] - 180 > angles[0]
-                              ) or (angles[1] < angles[0] and angles[1] + 180 > angles[0])
+                              ) or (angles[1] < angles[0] < angles[1] + 180)
                     coords = [
                         (point[0] - width / 2 + 1, point[1] - width / 2 + 1),
                         (point[0] + width / 2 - 1, point[1] + width / 2 - 1),
