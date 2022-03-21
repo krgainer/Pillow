@@ -37,6 +37,7 @@ class FontFile:
 
     def __init__(self):
 
+        self.metrics = None
         self.ysize = None
         self.info = {}
         self.glyph = [None] * 256
